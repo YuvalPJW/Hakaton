@@ -5,12 +5,13 @@ from PIL import Image, ImageTk
 
 # ---------------- FILE PATHS ----------------
 
-BASE_DIR = Path(__file__).resolve().parent
+base_dir = Path(__file__).resolve().parent
 
 
 # ---------------- WINDOW ----------------
 
 gui = tkinter.Tk()
+
 gui.title("ToDo App")
 gui.geometry("1200x750")
 gui.minsize(900, 600)
@@ -92,31 +93,31 @@ pet_canvas.pack(
 # ---------------- LOAD IMAGES ----------------
 
 background_image = Image.open(
-    BASE_DIR / "cat house.jfif"
+    base_dir / "cat house.jfif"
 ).convert("RGBA")
 
 
 sad_pet_image = Image.open(
-    BASE_DIR / "sad_cat.png"
+    base_dir / "sad_cat.png"
 ).convert("RGBA")
 
 
 hungry_pet_image = Image.open(
-    BASE_DIR / "hungery_cat.png"
+    base_dir / "hungery_cat.png"
 ).convert("RGBA")
 
 
 normal_pet_image = Image.open(
-    BASE_DIR / "normal_cat.png"
+    base_dir / "normal_cat.png"
 ).convert("RGBA")
 
 
 happy_pet_image = Image.open(
-    BASE_DIR / "happy_cat.png"
+    base_dir / "happy_cat.png"
 ).convert("RGBA")
 
 
-current_pet_image = sad_pet_image
+current_pet_image = hungry_pet_image
 
 
 # ---------------- CREATE IMAGES ON CANVAS ----------------
@@ -142,72 +143,54 @@ pet_photo = None
 # ---------------- RESIZE PET AREA ----------------
 
 def resize_pet_area(event=None):
-
     global background_photo
     global pet_photo
 
     frame_width = pet_canvas.winfo_width()
     frame_height = pet_canvas.winfo_height()
 
-
     if frame_width < 2 or frame_height < 2:
         return
-
-
-    # ---------- BACKGROUND ----------
 
     resized_background = background_image.resize(
         (frame_width, frame_height),
         Image.Resampling.LANCZOS
     )
 
-
     background_photo = ImageTk.PhotoImage(
         resized_background
     )
-
 
     pet_canvas.itemconfig(
         background_item,
         image=background_photo
     )
 
-
-    # ---------- PET ----------
-
     pet_width = int(frame_width * 0.34)
     pet_height = int(frame_height * 0.42)
 
-
     resized_pet = current_pet_image.copy()
-
 
     resized_pet.thumbnail(
         (pet_width, pet_height),
         Image.Resampling.LANCZOS
     )
 
-
     pet_photo = ImageTk.PhotoImage(
         resized_pet
     )
-
 
     pet_canvas.itemconfig(
         pet_item,
         image=pet_photo
     )
 
-
-    # position of cat in the room
     pet_canvas.coords(
         pet_item,
         int(frame_width * 0.47),
         int(frame_height * 0.76)
     )
 
-
-    # pet should always be above background
     pet_canvas.tag_raise(
         pet_item
     )
@@ -222,34 +205,22 @@ pet_canvas.bind(
 # ---------------- SHOW PET ----------------
 
 def show_pet(state):
-
     global current_pet_image
 
-
     if state == "sad":
-
         current_pet_image = sad_pet_image
 
-
     elif state == "hungry":
-
         current_pet_image = hungry_pet_image
 
-
     elif state == "normal":
-
         current_pet_image = normal_pet_image
-
 
     elif state == "happy":
-
         current_pet_image = happy_pet_image
 
-
     else:
-
         current_pet_image = normal_pet_image
-
 
     resize_pet_area()
 
@@ -391,14 +362,12 @@ canvas_window = task_canvas.create_window(
 # ---------------- SCROLL FUNCTIONS ----------------
 
 def update_scroll(event=None):
-
     task_canvas.configure(
         scrollregion=task_canvas.bbox("all")
     )
 
 
 def resize_tasks_frame(event):
-
     task_canvas.itemconfig(
         canvas_window,
         width=event.width
@@ -406,7 +375,6 @@ def resize_tasks_frame(event):
 
 
 def mouse_scroll(event):
-
     task_canvas.yview_scroll(
         int(-1 * (event.delta / 120)),
         "units"
@@ -492,7 +460,6 @@ delete_button.pack(
 # ---------------- TASK DISPLAY FUNCTIONS ----------------
 
 def create_task_row(task_number, task_text):
-
     one_task_frame = tkinter.Frame(
         tasks_frame,
         bg="#f7f7f7"
@@ -561,7 +528,6 @@ def create_task_row(task_number, task_text):
 
 
 def show_task_completed(task):
-
     task["button"].config(
         text="✓",
         fg="#4f6bed"
@@ -574,7 +540,6 @@ def show_task_completed(task):
 
 
 def show_task_uncompleted(task):
-
     task["button"].config(
         text="☐",
         fg="black"
@@ -587,14 +552,10 @@ def show_task_uncompleted(task):
 
 
 def display_task_order(tasks_list):
-
     for task in tasks_list:
-
         task["frame"].pack_forget()
 
-
     for index in range(len(tasks_list)):
-
         tasks_list[index]["frame"].pack(
             fill="x",
             pady=4
@@ -604,14 +565,16 @@ def display_task_order(tasks_list):
             text=str(index + 1) + "."
         )
 
-
     refresh_task_scroll()
 
 
 def refresh_task_scroll():
-
     gui.update_idletasks()
 
     task_canvas.configure(
         scrollregion=task_canvas.bbox("all")
     )
+
+
+# initial pet
+show_pet("hungry")
