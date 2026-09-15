@@ -1,13 +1,15 @@
 import tkinter
 from tkinter import messagebox
 import screen
+import client
+
+client.setup_chat_client(screen.left_frame)
+import screen
 
 
 # list that stores all tasks
 tasks_list = []
-
-
-# ---------------- INPUT ERROR ----------------
+counter = 1
 
 def input_error():
 
@@ -18,7 +20,6 @@ def input_error():
         )
 
         return 0
-
     return 1
 
 

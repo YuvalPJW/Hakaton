@@ -1,3 +1,4 @@
+
 import tkinter
 
 
@@ -519,5 +520,4 @@ enter_task_field.bind(
     "<Return>",
     lambda event: add_task()
 )
-
 
