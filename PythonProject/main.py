@@ -1,109 +1,334 @@
-from tkinter import *
-import screen
-# import messagebox class from tkinter
+import tkinter
 from tkinter import messagebox
+import screen
 
-# global list is declare for storing all the task
+
+# list that stores all tasks
 tasks_list = []
 
-# global variable is declare for counting the task
-counter = 1
 
+# ---------------- INPUT ERROR ----------------
 
-# Function for checking input error when
-# empty input is given in task field
-def inputError():
-    # check for enter task field is empty or not
-    if screen.enterTaskField.get() == "":
-        # show the error message
-        messagebox.showerror("Input Error")
+def input_error():
+
+    if screen.enter_task_field.get() == "":
+        messagebox.showerror(
+            "Input Error",
+            "Please enter a task"
+        )
 
         return 0
 
     return 1
 
 
-# Function for clearing the contents
-# of task number text field
-def clear_taskNumberField():
-    # clear the content of task number text field
-    screen.taskNumberField.delete(0.0, END)
+# ---------------- CLEAR FIELDS ----------------
+
+def clear_task_number_field():
+
+    screen.task_number_field.delete(
+        0,
+        tkinter.END
+    )
 
 
-# Function for clearing the contents
-# of task entry field
-def clear_taskField():
-    # clear the content of task field entry box
-    screen.enterTaskField.delete(0, END)
+def clear_task_field():
+
+    screen.enter_task_field.delete(
+        0,
+        tkinter.END
+    )
 
 
-# Function for inserting the contents
-# from the task entry field to the text area
-def insertTask():
-    global counter
+# ---------------- UPDATE TASK ORDER ----------------
 
-    # check for error
-    value = inputError()
+def reorder_tasks():
 
-    # if error occur then return
+    unfinished_tasks = []
+    finished_tasks = []
+
+
+    for task in tasks_list:
+
+        if task["completed"]:
+            finished_tasks.append(task)
+
+        else:
+            unfinished_tasks.append(task)
+
+
+    tasks_list.clear()
+
+    tasks_list.extend(unfinished_tasks)
+
+    tasks_list.extend(finished_tasks)
+
+
+    # remove all task rows from their old positions
+    for task in tasks_list:
+
+        task["frame"].pack_forget()
+
+
+    # put them back in the correct order
+    for index in range(len(tasks_list)):
+
+        tasks_list[index]["frame"].pack(
+            fill="x",
+            pady=4
+        )
+
+        tasks_list[index]["number"].config(
+            text=str(index + 1) + "."
+        )
+
+
+    # update scroll area
+    screen.gui.update_idletasks()
+
+    screen.task_canvas.configure(
+        scrollregion=screen.task_canvas.bbox("all")
+    )
+
+
+# ---------------- FINISH TASK ----------------
+
+def finish_task(task):
+
+    if task["completed"] is False:
+
+        task["completed"] = True
+
+        task["button"].config(
+            text="✓",
+            fg="#4f6bed"
+        )
+
+        task["label"].config(
+            fg="#888888",
+            font=("Arial", 13, "overstrike")
+        )
+
+
+    else:
+
+        task["completed"] = False
+
+        task["button"].config(
+            text="☐",
+            fg="black"
+        )
+
+        task["label"].config(
+            fg="#222222",
+            font=("Arial", 13)
+        )
+
+
+    reorder_tasks()
+
+
+# ---------------- INSERT TASK ----------------
+
+def insert_task():
+
+    value = input_error()
+
+
     if value == 0:
         return
 
-    # get the task string concatenating
-    # with new line character
-    content = screen.enterTaskField.get() + "\n"
 
-    # store task in the list
-    tasks_list.append(content)
-
-    # insert content of task entry field to the text area
-    # add task one by one in below one by one
-    screen.TextArea.insert('end -1 chars', "[ " + str(counter) + " ] " + content)
-
-    # incremented
-    counter += 1
-
-    # function calling for deleting the content of task field
-    clear_taskField()
+    task_text = screen.enter_task_field.get()
 
 
-# function for deleting the specified task
-def delete():
-    global counter
+    # frame for one task
+    one_task_frame = tkinter.Frame(
+        screen.tasks_frame,
+        bg="#f7f7f7"
+    )
 
-    # handling the empty task error
+    one_task_frame.pack(
+        fill="x",
+        pady=4
+    )
+
+
+    # task number
+    task_number = len(tasks_list) + 1
+
+
+    number_label = tkinter.Label(
+        one_task_frame,
+        text=str(task_number) + ".",
+        bg="#f7f7f7",
+        fg="#555555",
+        font=("Arial", 13)
+    )
+
+    number_label.pack(
+        side="left",
+        padx=(10, 5),
+        pady=8
+    )
+
+
+    # task text
+    task_label = tkinter.Label(
+        one_task_frame,
+        text=task_text,
+        bg="#f7f7f7",
+        fg="#222222",
+        font=("Arial", 13),
+        anchor="w"
+    )
+
+    task_label.pack(
+        side="left",
+        padx=5,
+        pady=8,
+        fill="x",
+        expand=True
+    )
+
+
+    # done button
+    done_button = tkinter.Button(
+        one_task_frame,
+        text="☐",
+        font=("Arial", 14),
+        bg="white",
+        bd=0,
+        width=3
+    )
+
+    done_button.pack(
+        side="right",
+        padx=10
+    )
+
+
+    # dictionary containing the task
+    new_task = {
+        "frame": one_task_frame,
+        "number": number_label,
+        "label": task_label,
+        "button": done_button,
+        "completed": False
+    }
+
+
+    # button command
+    done_button.config(
+        command=lambda: finish_task(new_task)
+    )
+
+
+    # add task to the list
+    tasks_list.append(new_task)
+
+
+    # clear entry field
+    clear_task_field()
+
+
+    # update scroll area
+    screen.gui.update_idletasks()
+
+    screen.task_canvas.configure(
+        scrollregion=screen.task_canvas.bbox("all")
+    )
+
+
+# ---------------- DELETE TASK ----------------
+
+def delete_task():
+
     if len(tasks_list) == 0:
-        messagebox.showerror("No task")
+
+        messagebox.showerror(
+            "No Task",
+            "There are no tasks to delete"
+        )
+
         return
 
-    # get the task number, which is required to delete
-    number = screen.taskNumberField.get(1.0, END)
 
-    # checking for input error when
-    # empty input in task number field
-    if number == "\n":
-        messagebox.showerror("input error")
+    number = screen.task_number_field.get()
+
+
+    if number == "":
+
+        messagebox.showerror(
+            "Input Error",
+            "Please enter a task number"
+        )
+
         return
 
-    else:
-        task_no = int(number)
 
-    # function calling for deleting the
-    # content of task number field
-    clear_taskNumberField()
+    if not number.isdigit():
 
-    # deleted specified task from the list
-    tasks_list.pop(task_no - 1)
+        messagebox.showerror(
+            "Input Error",
+            "Please enter a valid number"
+        )
 
-    # decremented
-    counter -= 1
+        return
 
-    # whole content of text area widget is deleted
-    screen.TextArea.delete(1.0, END)
 
-    # rewriting the task after deleting one task at a time
-    for i in range(len(tasks_list)):
-        screen.TextArea.insert('end -1 chars', "[ " + str(i + 1) + " ] " + tasks_list[i])
+    task_number = int(number)
 
+
+    if task_number < 1 or task_number > len(tasks_list):
+
+        messagebox.showerror(
+            "Input Error",
+            "Task number does not exist"
+        )
+
+        return
+
+
+    # get task
+    task_to_delete = tasks_list[task_number - 1]
+
+
+    # delete task from screen
+    task_to_delete["frame"].destroy()
+
+
+    # delete task from list
+    tasks_list.pop(task_number - 1)
+
+
+    # clear delete field
+    clear_task_number_field()
+
+
+    # update order and numbers
+    reorder_tasks()
+
+
+# ---------------- BUTTON COMMANDS ----------------
+
+screen.submit_button.config(
+    command=insert_task
+)
+
+
+screen.delete_button.config(
+    command=delete_task
+)
+
+
+# pressing Enter also adds a task
+screen.enter_task_field.bind(
+    "<Return>",
+    lambda event: insert_task()
+)
+
+
+# ---------------- START PROGRAM ----------------
 
 screen.gui.mainloop()

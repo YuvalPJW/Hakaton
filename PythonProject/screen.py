@@ -6,127 +6,120 @@ import tkinter
 gui = tkinter.Tk()
 
 gui.title("ToDo App")
-
 gui.geometry("1200x750")
-
 gui.minsize(900, 600)
 
-gui.configure(bg="#F5F5F5")
+gui.configure(bg="#f5f5f5")
 
 
-# ---------------- SCREEN AREAS ----------------
+# ---------------- MAIN SPLIT ----------------
 
-# left half
-leftFrame = tkinter.Frame(
+main_split = tkinter.PanedWindow(
     gui,
-    bg="#F5F5F5"
+    orient=tkinter.HORIZONTAL,
+    sashwidth=6,
+    bg="#cfcfcf",
+    bd=0
 )
 
-leftFrame.place(
-    relx=0,
-    rely=0,
-    relwidth=0.5,
-    relheight=1
-)
-
-
-# top right quarter
-topRightFrame = tkinter.Frame(
-    gui,
-    bg="#F5F5F5"
-)
-
-topRightFrame.place(
-    relx=0.5,
-    rely=0,
-    relwidth=0.5,
-    relheight=0.5
+main_split.pack(
+    fill="both",
+    expand=True
 )
 
 
-# bottom right quarter
-taskFrame = tkinter.Frame(
-    gui,
+# ---------------- LEFT SIDE ----------------
+
+left_frame = tkinter.Frame(
+    main_split,
+    bg="#f5f5f5"
+)
+
+main_split.add(
+    left_frame,
+    minsize=200
+)
+
+
+# ---------------- RIGHT SIDE ----------------
+
+right_split = tkinter.PanedWindow(
+    main_split,
+    orient=tkinter.VERTICAL,
+    sashwidth=6,
+    bg="#cfcfcf",
+    bd=0
+)
+
+main_split.add(
+    right_split,
+    minsize=300
+)
+
+
+# ---------------- TOP RIGHT ----------------
+
+top_right_frame = tkinter.Frame(
+    right_split,
+    bg="#f5f5f5"
+)
+
+right_split.add(
+    top_right_frame,
+    minsize=150
+)
+
+
+# ---------------- BOTTOM RIGHT ----------------
+
+task_frame = tkinter.Frame(
+    right_split,
     bg="white"
 )
 
-taskFrame.place(
-    relx=0.5,
-    rely=0.5,
-    relwidth=0.5,
-    relheight=0.5
-)
-
-
-# ---------------- DIVIDING LINES ----------------
-
-# vertical line
-verticalLine = tkinter.Frame(
-    gui,
-    bg="#CFCFCF",
-    width=2
-)
-
-verticalLine.place(
-    relx=0.5,
-    rely=0,
-    relheight=1,
-    anchor="n"
-)
-
-
-# horizontal line - only on the right
-horizontalLine = tkinter.Frame(
-    gui,
-    bg="#CFCFCF",
-    height=2
-)
-
-horizontalLine.place(
-    relx=0.5,
-    rely=0.5,
-    relwidth=0.5,
-    anchor="w"
+right_split.add(
+    task_frame,
+    minsize=200
 )
 
 
 # ---------------- TASK TITLE ----------------
 
-titleLabel = tkinter.Label(
-    taskFrame,
+title_label = tkinter.Label(
+    task_frame,
     text="MY TASKS",
     bg="white",
     fg="#222222",
     font=("Arial", 22, "bold")
 )
 
-titleLabel.pack(
+title_label.pack(
     pady=(15, 8)
 )
 
 
 # ---------------- ADD TASK AREA ----------------
 
-addFrame = tkinter.Frame(
-    taskFrame,
+add_frame = tkinter.Frame(
+    task_frame,
     bg="white"
 )
 
-addFrame.pack(
+add_frame.pack(
     fill="x",
     padx=30,
     pady=5
 )
 
 
-enterTaskField = tkinter.Entry(
-    addFrame,
+enter_task_field = tkinter.Entry(
+    add_frame,
     font=("Arial", 14),
     bd=1,
     relief="solid"
 )
 
-enterTaskField.pack(
+enter_task_field.pack(
     side="left",
     fill="x",
     expand=True,
@@ -134,14 +127,14 @@ enterTaskField.pack(
 )
 
 
-# ---------------- TASKS LIST AREA ----------------
+# ---------------- TASK LIST AREA ----------------
 
-listContainer = tkinter.Frame(
-    taskFrame,
+list_container = tkinter.Frame(
+    task_frame,
     bg="white"
 )
 
-listContainer.pack(
+list_container.pack(
     fill="both",
     expand=True,
     padx=30,
@@ -149,94 +142,86 @@ listContainer.pack(
 )
 
 
-# Canvas allows scrolling
-taskCanvas = tkinter.Canvas(
-    listContainer,
+task_canvas = tkinter.Canvas(
+    list_container,
     bg="white",
     highlightthickness=0
 )
 
-taskCanvas.pack(
+task_canvas.pack(
     side="left",
     fill="both",
     expand=True
 )
 
 
-# Scrollbar
-scrollbar = tkinter.Scrollbar(
-    listContainer,
+scroll_bar = tkinter.Scrollbar(
+    list_container,
     orient="vertical",
-    command=taskCanvas.yview
+    command=task_canvas.yview
 )
 
-scrollbar.pack(
+scroll_bar.pack(
     side="right",
     fill="y"
 )
 
 
-taskCanvas.configure(
-    yscrollcommand=scrollbar.set
+task_canvas.configure(
+    yscrollcommand=scroll_bar.set
 )
 
 
-# Frame inside the canvas
-tasksFrame = tkinter.Frame(
-    taskCanvas,
+tasks_frame = tkinter.Frame(
+    task_canvas,
     bg="white"
 )
 
 
-canvasWindow = taskCanvas.create_window(
+canvas_window = task_canvas.create_window(
     (0, 0),
-    window=tasksFrame,
+    window=tasks_frame,
     anchor="nw"
 )
 
 
 # ---------------- SCROLL FUNCTIONS ----------------
 
-def updateScroll(event):
-
-    taskCanvas.configure(
-        scrollregion=taskCanvas.bbox("all")
+def update_scroll(event):
+    task_canvas.configure(
+        scrollregion=task_canvas.bbox("all")
     )
 
 
-tasksFrame.bind(
+tasks_frame.bind(
     "<Configure>",
-    updateScroll
+    update_scroll
 )
 
 
-# Make tasksFrame use the whole canvas width
-def resizeTasksFrame(event):
-
-    taskCanvas.itemconfig(
-        canvasWindow,
+def resize_tasks_frame(event):
+    task_canvas.itemconfig(
+        canvas_window,
         width=event.width
     )
 
 
-taskCanvas.bind(
+task_canvas.bind(
     "<Configure>",
-    resizeTasksFrame
+    resize_tasks_frame
 )
 
 
-# Mouse wheel
-def mouseScroll(event):
-
-    taskCanvas.yview_scroll(
+def mouse_scroll(event):
+    task_canvas.yview_scroll(
         int(-1 * (event.delta / 120)),
         "units"
     )
 
 
-taskCanvas.bind_all(
+task_canvas.bind_all(
     "<MouseWheel>",
-    mouseScroll
+    mouse_scroll
 )
 
 
@@ -247,104 +232,82 @@ tasks = []
 
 # ---------------- REORDER TASKS ----------------
 
-def reorderTasks():
-
-    # unfinished tasks first
-    unfinished = []
-
-    # finished tasks last
-    finished = []
+def reorder_tasks():
+    unfinished_tasks = []
+    finished_tasks = []
 
     for task in tasks:
-
-        if task["completed"] == True:
-            finished.append(task)
-
+        if task["completed"]:
+            finished_tasks.append(task)
         else:
-            unfinished.append(task)
+            unfinished_tasks.append(task)
 
-
-    # rebuild list in new order
     tasks.clear()
 
-    tasks.extend(unfinished)
+    tasks.extend(unfinished_tasks)
+    tasks.extend(finished_tasks)
 
-    tasks.extend(finished)
-
-
-    # remove task frames from their current positions
     for task in tasks:
-
         task["frame"].pack_forget()
 
-
-    # place them again in correct order
-    for i in range(len(tasks)):
-
-        tasks[i]["frame"].pack(
+    for index in range(len(tasks)):
+        tasks[index]["frame"].pack(
             fill="x",
             pady=4
         )
 
-        # update task number
-        tasks[i]["number"].config(
-            text=str(i + 1) + "."
+        tasks[index]["number"].config(
+            text=str(index + 1) + "."
         )
 
 
 # ---------------- ADD TASK FUNCTION ----------------
 
-def addTask():
+def add_task():
+    task_text = enter_task_field.get()
 
-    taskText = enterTaskField.get()
-
-
-    if taskText == "":
+    if task_text == "":
         return
 
-
-    # frame for one task
-    oneTaskFrame = tkinter.Frame(
-        tasksFrame,
-        bg="#F7F7F7"
+    one_task_frame = tkinter.Frame(
+        tasks_frame,
+        bg="#f7f7f7"
     )
 
-    oneTaskFrame.pack(
+    one_task_frame.pack(
         fill="x",
         pady=4
     )
 
 
-    # task number
-    taskNumber = len(tasks) + 1
+    task_number = len(tasks) + 1
 
 
-    numberLabel = tkinter.Label(
-        oneTaskFrame,
-        text=str(taskNumber) + ".",
-        bg="#F7F7F7",
+    number_label = tkinter.Label(
+        one_task_frame,
+        text=str(task_number) + ".",
+        bg="#f7f7f7",
         fg="#555555",
         font=("Arial", 13)
     )
 
-    numberLabel.pack(
+    number_label.pack(
         side="left",
         padx=(10, 5),
         pady=8
     )
 
 
-    # task text
-    taskLabel = tkinter.Label(
-        oneTaskFrame,
-        text=taskText,
-        bg="#F7F7F7",
+    task_label = tkinter.Label(
+        one_task_frame,
+        text=task_text,
+        bg="#f7f7f7",
         fg="#222222",
         font=("Arial", 13),
         anchor="w"
     )
 
-    taskLabel.pack(
+    task_label.pack(
         side="left",
         padx=5,
         pady=8,
@@ -353,9 +316,8 @@ def addTask():
     )
 
 
-    # done button
-    doneButton = tkinter.Button(
-        oneTaskFrame,
+    done_button = tkinter.Button(
+        one_task_frame,
         text="☐",
         font=("Arial", 14),
         bg="white",
@@ -363,103 +325,89 @@ def addTask():
         width=3
     )
 
-    doneButton.pack(
+    done_button.pack(
         side="right",
         padx=10
     )
 
 
-    # Dictionary that represents this task
-    newTask = {
-        "frame": oneTaskFrame,
-        "number": numberLabel,
-        "label": taskLabel,
-        "button": doneButton,
+    new_task = {
+        "frame": one_task_frame,
+        "number": number_label,
+        "label": task_label,
+        "button": done_button,
         "completed": False
     }
 
 
-    # ---------------- COMPLETE TASK ----------------
+    def finish_task():
+        if new_task["completed"] is False:
+            new_task["completed"] = True
 
-    def finishTask():
-
-        # if task is unfinished
-        if newTask["completed"] == False:
-
-            newTask["completed"] = True
-
-            doneButton.config(
+            done_button.config(
                 text="✓",
-                fg="#4F6BED"
+                fg="#4f6bed"
             )
 
-            taskLabel.config(
+            task_label.config(
                 fg="#888888",
                 font=("Arial", 13, "overstrike")
             )
 
-
-        # if task was already finished
         else:
+            new_task["completed"] = False
 
-            newTask["completed"] = False
-
-            doneButton.config(
+            done_button.config(
                 text="☐",
                 fg="black"
             )
 
-            taskLabel.config(
+            task_label.config(
                 fg="#222222",
                 font=("Arial", 13)
             )
 
-
-        # move finished tasks to bottom
-        reorderTasks()
+        reorder_tasks()
 
 
-    doneButton.config(
-        command=finishTask
+    done_button.config(
+        command=finish_task
     )
 
 
-    # add task to list
-    tasks.append(newTask)
+    tasks.append(new_task)
 
 
-    # clear entry
-    enterTaskField.delete(
+    enter_task_field.delete(
         0,
         tkinter.END
     )
 
 
-    # update scrolling area
     gui.update_idletasks()
 
-    taskCanvas.configure(
-        scrollregion=taskCanvas.bbox("all")
+    task_canvas.configure(
+        scrollregion=task_canvas.bbox("all")
     )
 
 
 # ---------------- ADD BUTTON ----------------
 
-Submit = tkinter.Button(
-    addFrame,
+submit_button = tkinter.Button(
+    add_frame,
     text="Add Task",
-    bg="#4F6BED",
+    bg="#4f6bed",
     fg="white",
-    activebackground="#4058C9",
+    activebackground="#4058c9",
     activeforeground="white",
     font=("Arial", 12, "bold"),
     bd=0,
     padx=18,
     pady=8,
-    command=addTask
+    command=add_task
 )
 
-Submit.pack(
+submit_button.pack(
     side="left",
     padx=(10, 0)
 )
@@ -467,39 +415,39 @@ Submit.pack(
 
 # ---------------- DELETE AREA ----------------
 
-deleteFrame = tkinter.Frame(
-    taskFrame,
+delete_frame = tkinter.Frame(
+    task_frame,
     bg="white"
 )
 
-deleteFrame.pack(
+delete_frame.pack(
     fill="x",
     padx=30,
     pady=(0, 15)
 )
 
 
-deleteLabel = tkinter.Label(
-    deleteFrame,
+delete_label = tkinter.Label(
+    delete_frame,
     text="Delete task number:",
     bg="white",
     fg="#444444",
     font=("Arial", 11)
 )
 
-deleteLabel.pack(
+delete_label.pack(
     side="left"
 )
 
 
-taskNumberField = tkinter.Entry(
-    deleteFrame,
+task_number_field = tkinter.Entry(
+    delete_frame,
     width=5,
     font=("Arial", 12),
     justify="center"
 )
 
-taskNumberField.pack(
+task_number_field.pack(
     side="left",
     padx=8
 )
@@ -507,81 +455,69 @@ taskNumberField.pack(
 
 # ---------------- DELETE FUNCTION ----------------
 
-def deleteTask():
-
-    number = taskNumberField.get()
-
+def delete_task():
+    number = task_number_field.get()
 
     if number == "":
         return
 
-
     if not number.isdigit():
         return
 
-
     number = int(number)
-
 
     if number < 1 or number > len(tasks):
         return
 
 
-    # find task
-    taskToDelete = tasks[number - 1]
+    task_to_delete = tasks[number - 1]
 
+    task_to_delete["frame"].destroy()
 
-    # delete from screen
-    taskToDelete["frame"].destroy()
-
-
-    # delete from list
     tasks.pop(number - 1)
 
-
-    # update numbers
-    reorderTasks()
+    reorder_tasks()
 
 
-    # clear delete field
-    taskNumberField.delete(
+    task_number_field.delete(
         0,
         tkinter.END
     )
 
 
-    # update scrolling
     gui.update_idletasks()
 
-    taskCanvas.configure(
-        scrollregion=taskCanvas.bbox("all")
+    task_canvas.configure(
+        scrollregion=task_canvas.bbox("all")
     )
 
 
 # ---------------- DELETE BUTTON ----------------
 
-deleteButton = tkinter.Button(
-    deleteFrame,
+delete_button = tkinter.Button(
+    delete_frame,
     text="Delete",
-    bg="#E85B5B",
+    bg="#e85b5b",
     fg="white",
-    activebackground="#C94A4A",
+    activebackground="#c94a4a",
     activeforeground="white",
     font=("Arial", 11, "bold"),
     bd=0,
     padx=15,
     pady=6,
-    command=deleteTask
+    command=delete_task
 )
 
-deleteButton.pack(
+delete_button.pack(
     side="left"
 )
 
 
 # ---------------- ENTER KEY ----------------
 
-enterTaskField.bind(
+enter_task_field.bind(
     "<Return>",
-    lambda event: addTask()
+    lambda event: add_task()
 )
+
+
