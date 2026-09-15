@@ -1,5 +1,5 @@
-
 import tkinter
+from PIL import Image, ImageTk
 
 
 # ---------------- WINDOW ----------------
@@ -68,6 +68,40 @@ top_right_frame = tkinter.Frame(
 right_split.add(
     top_right_frame,
     minsize=150
+)
+
+
+# ---------------- TOP RIGHT BACKGROUND ----------------
+
+background_image = Image.open("cat house.jfif")
+
+def resize_background(event):
+    resized_image = background_image.resize(
+        (event.width, event.height),
+        Image.Resampling.LANCZOS
+    )
+
+    background_photo = ImageTk.PhotoImage(resized_image)
+
+    background_label.config(image=background_photo)
+    background_label.image = background_photo
+
+
+background_label = tkinter.Label(
+    top_right_frame,
+    bd=0
+)
+
+background_label.place(
+    x=0,
+    y=0,
+    relwidth=1,
+    relheight=1
+)
+
+top_right_frame.bind(
+    "<Configure>",
+    resize_background
 )
 
 
