@@ -40,7 +40,7 @@ def clear_task_field():
     )
 
 
-# ---------------- UPDATE TASK ORDER ----------------
+
 
 def reorder_tasks():
 

@@ -513,7 +513,7 @@ delete_button.pack(
 )
 
 
-# ---------------- ENTER KEY ----------------
+
 
 enter_task_field.bind(
     "<Return>",
