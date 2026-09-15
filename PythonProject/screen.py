@@ -75,7 +75,7 @@ verticalLine.place(
 )
 
 
-# horizontal line - only on the right half
+# horizontal line - only on the right
 horizontalLine = tkinter.Frame(
     gui,
     bg="#CFCFCF",
@@ -101,7 +101,7 @@ titleLabel = tkinter.Label(
 )
 
 titleLabel.pack(
-    pady=(20, 10)
+    pady=(15, 8)
 )
 
 
@@ -115,7 +115,7 @@ addFrame = tkinter.Frame(
 addFrame.pack(
     fill="x",
     padx=30,
-    pady=10
+    pady=5
 )
 
 
@@ -134,22 +134,162 @@ enterTaskField.pack(
 )
 
 
-# ---------------- TASK LIST ----------------
+# ---------------- TASKS LIST AREA ----------------
 
-tasksFrame = tkinter.Frame(
+listContainer = tkinter.Frame(
     taskFrame,
     bg="white"
 )
 
-tasksFrame.pack(
+listContainer.pack(
     fill="both",
     expand=True,
     padx=30,
-    pady=10
+    pady=8
 )
 
 
+# Canvas allows scrolling
+taskCanvas = tkinter.Canvas(
+    listContainer,
+    bg="white",
+    highlightthickness=0
+)
+
+taskCanvas.pack(
+    side="left",
+    fill="both",
+    expand=True
+)
+
+
+# Scrollbar
+scrollbar = tkinter.Scrollbar(
+    listContainer,
+    orient="vertical",
+    command=taskCanvas.yview
+)
+
+scrollbar.pack(
+    side="right",
+    fill="y"
+)
+
+
+taskCanvas.configure(
+    yscrollcommand=scrollbar.set
+)
+
+
+# Frame inside the canvas
+tasksFrame = tkinter.Frame(
+    taskCanvas,
+    bg="white"
+)
+
+
+canvasWindow = taskCanvas.create_window(
+    (0, 0),
+    window=tasksFrame,
+    anchor="nw"
+)
+
+
+# ---------------- SCROLL FUNCTIONS ----------------
+
+def updateScroll(event):
+
+    taskCanvas.configure(
+        scrollregion=taskCanvas.bbox("all")
+    )
+
+
+tasksFrame.bind(
+    "<Configure>",
+    updateScroll
+)
+
+
+# Make tasksFrame use the whole canvas width
+def resizeTasksFrame(event):
+
+    taskCanvas.itemconfig(
+        canvasWindow,
+        width=event.width
+    )
+
+
+taskCanvas.bind(
+    "<Configure>",
+    resizeTasksFrame
+)
+
+
+# Mouse wheel
+def mouseScroll(event):
+
+    taskCanvas.yview_scroll(
+        int(-1 * (event.delta / 120)),
+        "units"
+    )
+
+
+taskCanvas.bind_all(
+    "<MouseWheel>",
+    mouseScroll
+)
+
+
+# ---------------- TASKS ----------------
+
 tasks = []
+
+
+# ---------------- REORDER TASKS ----------------
+
+def reorderTasks():
+
+    # unfinished tasks first
+    unfinished = []
+
+    # finished tasks last
+    finished = []
+
+    for task in tasks:
+
+        if task["completed"] == True:
+            finished.append(task)
+
+        else:
+            unfinished.append(task)
+
+
+    # rebuild list in new order
+    tasks.clear()
+
+    tasks.extend(unfinished)
+
+    tasks.extend(finished)
+
+
+    # remove task frames from their current positions
+    for task in tasks:
+
+        task["frame"].pack_forget()
+
+
+    # place them again in correct order
+    for i in range(len(tasks)):
+
+        tasks[i]["frame"].pack(
+            fill="x",
+            pady=4
+        )
+
+        # update task number
+        tasks[i]["number"].config(
+            text=str(i + 1) + "."
+        )
 
 
 # ---------------- ADD TASK FUNCTION ----------------
@@ -158,8 +298,10 @@ def addTask():
 
     taskText = enterTaskField.get()
 
+
     if taskText == "":
         return
+
 
     # frame for one task
     oneTaskFrame = tkinter.Frame(
@@ -175,6 +317,7 @@ def addTask():
 
     # task number
     taskNumber = len(tasks) + 1
+
 
     numberLabel = tkinter.Label(
         oneTaskFrame,
@@ -197,13 +340,16 @@ def addTask():
         text=taskText,
         bg="#F7F7F7",
         fg="#222222",
-        font=("Arial", 13)
+        font=("Arial", 13),
+        anchor="w"
     )
 
     taskLabel.pack(
         side="left",
         padx=5,
-        pady=8
+        pady=8,
+        fill="x",
+        expand=True
     )
 
 
@@ -223,13 +369,28 @@ def addTask():
     )
 
 
-    # function for marking task as finished
+    # Dictionary that represents this task
+    newTask = {
+        "frame": oneTaskFrame,
+        "number": numberLabel,
+        "label": taskLabel,
+        "button": doneButton,
+        "completed": False
+    }
+
+
+    # ---------------- COMPLETE TASK ----------------
+
     def finishTask():
 
-        if doneButton["text"] == "☐":
+        # if task is unfinished
+        if newTask["completed"] == False:
+
+            newTask["completed"] = True
 
             doneButton.config(
-                text="✓"
+                text="✓",
+                fg="#4F6BED"
             )
 
             taskLabel.config(
@@ -237,10 +398,15 @@ def addTask():
                 font=("Arial", 13, "overstrike")
             )
 
+
+        # if task was already finished
         else:
 
+            newTask["completed"] = False
+
             doneButton.config(
-                text="☐"
+                text="☐",
+                fg="black"
             )
 
             taskLabel.config(
@@ -249,24 +415,31 @@ def addTask():
             )
 
 
+        # move finished tasks to bottom
+        reorderTasks()
+
+
     doneButton.config(
         command=finishTask
     )
 
 
-    # save task
-    tasks.append(
-        {
-            "frame": oneTaskFrame,
-            "number": numberLabel
-        }
-    )
+    # add task to list
+    tasks.append(newTask)
 
 
-    # clear text field
+    # clear entry
     enterTaskField.delete(
         0,
         tkinter.END
+    )
+
+
+    # update scrolling area
+    gui.update_idletasks()
+
+    taskCanvas.configure(
+        scrollregion=taskCanvas.bbox("all")
     )
 
 
@@ -302,7 +475,7 @@ deleteFrame = tkinter.Frame(
 deleteFrame.pack(
     fill="x",
     padx=30,
-    pady=(0, 20)
+    pady=(0, 15)
 )
 
 
@@ -338,13 +511,17 @@ def deleteTask():
 
     number = taskNumberField.get()
 
+
     if number == "":
         return
+
 
     if not number.isdigit():
         return
 
+
     number = int(number)
+
 
     if number < 1 or number > len(tasks):
         return
@@ -353,24 +530,31 @@ def deleteTask():
     # find task
     taskToDelete = tasks[number - 1]
 
-    # remove from screen
+
+    # delete from screen
     taskToDelete["frame"].destroy()
 
-    # remove from list
+
+    # delete from list
     tasks.pop(number - 1)
 
 
-    # fix numbers
-    for i in range(len(tasks)):
-
-        tasks[i]["number"].config(
-            text=str(i + 1) + "."
-        )
+    # update numbers
+    reorderTasks()
 
 
+    # clear delete field
     taskNumberField.delete(
         0,
         tkinter.END
+    )
+
+
+    # update scrolling
+    gui.update_idletasks()
+
+    taskCanvas.configure(
+        scrollregion=taskCanvas.bbox("all")
     )
 
 
@@ -401,8 +585,3 @@ enterTaskField.bind(
     "<Return>",
     lambda event: addTask()
 )
-
-
-# ---------------- START PROGRAM ----------------
-
-gui.mainloop()

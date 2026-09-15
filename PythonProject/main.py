@@ -104,3 +104,6 @@ def delete():
     # rewriting the task after deleting one task at a time
     for i in range(len(tasks_list)):
         screen.TextArea.insert('end -1 chars', "[ " + str(i + 1) + " ] " + tasks_list[i])
+
+
+screen.gui.mainloop()
