@@ -1,15 +1,19 @@
 import tkinter
+from pathlib import Path
 from PIL import Image, ImageTk
+
+
+# ---------------- FILE PATHS ----------------
+
+BASE_DIR = Path(__file__).resolve().parent
 
 
 # ---------------- WINDOW ----------------
 
 gui = tkinter.Tk()
-
 gui.title("ToDo App")
 gui.geometry("1200x750")
 gui.minsize(900, 600)
-
 gui.configure(bg="#f5f5f5")
 
 
@@ -71,38 +75,183 @@ right_split.add(
 )
 
 
-# ---------------- TOP RIGHT BACKGROUND ----------------
+# ---------------- PET AREA ----------------
 
-background_image = Image.open("cat house.jfif")
+pet_canvas = tkinter.Canvas(
+    top_right_frame,
+    bd=0,
+    highlightthickness=0
+)
 
-def resize_background(event):
-    resized_image = background_image.resize(
-        (event.width, event.height),
+pet_canvas.pack(
+    fill="both",
+    expand=True
+)
+
+
+# ---------------- LOAD IMAGES ----------------
+
+background_image = Image.open(
+    BASE_DIR / "cat house.jfif"
+).convert("RGBA")
+
+
+sad_pet_image = Image.open(
+    BASE_DIR / "sad_cat.png"
+).convert("RGBA")
+
+
+hungry_pet_image = Image.open(
+    BASE_DIR / "hungery_cat.png"
+).convert("RGBA")
+
+
+normal_pet_image = Image.open(
+    BASE_DIR / "normal_cat.png"
+).convert("RGBA")
+
+
+happy_pet_image = Image.open(
+    BASE_DIR / "happy_cat.png"
+).convert("RGBA")
+
+
+current_pet_image = sad_pet_image
+
+
+# ---------------- CREATE IMAGES ON CANVAS ----------------
+
+background_item = pet_canvas.create_image(
+    0,
+    0,
+    anchor="nw"
+)
+
+
+pet_item = pet_canvas.create_image(
+    0,
+    0,
+    anchor="center"
+)
+
+
+background_photo = None
+pet_photo = None
+
+
+# ---------------- RESIZE PET AREA ----------------
+
+def resize_pet_area(event=None):
+
+    global background_photo
+    global pet_photo
+
+    frame_width = pet_canvas.winfo_width()
+    frame_height = pet_canvas.winfo_height()
+
+
+    if frame_width < 2 or frame_height < 2:
+        return
+
+
+    # ---------- BACKGROUND ----------
+
+    resized_background = background_image.resize(
+        (frame_width, frame_height),
         Image.Resampling.LANCZOS
     )
 
-    background_photo = ImageTk.PhotoImage(resized_image)
 
-    background_label.config(image=background_photo)
-    background_label.image = background_photo
+    background_photo = ImageTk.PhotoImage(
+        resized_background
+    )
 
 
-background_label = tkinter.Label(
-    top_right_frame,
-    bd=0
-)
+    pet_canvas.itemconfig(
+        background_item,
+        image=background_photo
+    )
 
-background_label.place(
-    x=0,
-    y=0,
-    relwidth=1,
-    relheight=1
-)
 
-top_right_frame.bind(
+    # ---------- PET ----------
+
+    pet_width = int(frame_width * 0.34)
+    pet_height = int(frame_height * 0.42)
+
+
+    resized_pet = current_pet_image.copy()
+
+
+    resized_pet.thumbnail(
+        (pet_width, pet_height),
+        Image.Resampling.LANCZOS
+    )
+
+
+    pet_photo = ImageTk.PhotoImage(
+        resized_pet
+    )
+
+
+    pet_canvas.itemconfig(
+        pet_item,
+        image=pet_photo
+    )
+
+
+    # position of cat in the room
+    pet_canvas.coords(
+        pet_item,
+        int(frame_width * 0.47),
+        int(frame_height * 0.76)
+    )
+
+
+    # pet should always be above background
+    pet_canvas.tag_raise(
+        pet_item
+    )
+
+
+pet_canvas.bind(
     "<Configure>",
-    resize_background
+    resize_pet_area
 )
+
+
+# ---------------- SHOW PET ----------------
+
+def show_pet(state):
+
+    global current_pet_image
+
+
+    if state == "sad":
+
+        current_pet_image = sad_pet_image
+
+
+    elif state == "hungry":
+
+        current_pet_image = hungry_pet_image
+
+
+    elif state == "normal":
+
+        current_pet_image = normal_pet_image
+
+
+    elif state == "happy":
+
+        current_pet_image = happy_pet_image
+
+
+    else:
+
+        current_pet_image = normal_pet_image
+
+
+    resize_pet_area()
 
 
 # ---------------- BOTTOM RIGHT ----------------
@@ -159,6 +308,25 @@ enter_task_field.pack(
     fill="x",
     expand=True,
     ipady=7
+)
+
+
+submit_button = tkinter.Button(
+    add_frame,
+    text="Add Task",
+    bg="#4f6bed",
+    fg="white",
+    activebackground="#4058c9",
+    activeforeground="white",
+    font=("Arial", 12, "bold"),
+    bd=0,
+    padx=18,
+    pady=8
+)
+
+submit_button.pack(
+    side="left",
+    padx=(10, 0)
 )
 
 
@@ -222,9 +390,26 @@ canvas_window = task_canvas.create_window(
 
 # ---------------- SCROLL FUNCTIONS ----------------
 
-def update_scroll(event):
+def update_scroll(event=None):
+
     task_canvas.configure(
         scrollregion=task_canvas.bbox("all")
+    )
+
+
+def resize_tasks_frame(event):
+
+    task_canvas.itemconfig(
+        canvas_window,
+        width=event.width
+    )
+
+
+def mouse_scroll(event):
+
+    task_canvas.yview_scroll(
+        int(-1 * (event.delta / 120)),
+        "units"
     )
 
 
@@ -234,24 +419,10 @@ tasks_frame.bind(
 )
 
 
-def resize_tasks_frame(event):
-    task_canvas.itemconfig(
-        canvas_window,
-        width=event.width
-    )
-
-
 task_canvas.bind(
     "<Configure>",
     resize_tasks_frame
 )
-
-
-def mouse_scroll(event):
-    task_canvas.yview_scroll(
-        int(-1 * (event.delta / 120)),
-        "units"
-    )
 
 
 task_canvas.bind_all(
@@ -260,49 +431,67 @@ task_canvas.bind_all(
 )
 
 
-# ---------------- TASKS ----------------
+# ---------------- DELETE AREA ----------------
 
-tasks = []
+delete_frame = tkinter.Frame(
+    task_frame,
+    bg="white"
+)
 
-
-# ---------------- REORDER TASKS ----------------
-
-def reorder_tasks():
-    unfinished_tasks = []
-    finished_tasks = []
-
-    for task in tasks:
-        if task["completed"]:
-            finished_tasks.append(task)
-        else:
-            unfinished_tasks.append(task)
-
-    tasks.clear()
-
-    tasks.extend(unfinished_tasks)
-    tasks.extend(finished_tasks)
-
-    for task in tasks:
-        task["frame"].pack_forget()
-
-    for index in range(len(tasks)):
-        tasks[index]["frame"].pack(
-            fill="x",
-            pady=4
-        )
-
-        tasks[index]["number"].config(
-            text=str(index + 1) + "."
-        )
+delete_frame.pack(
+    fill="x",
+    padx=30,
+    pady=(0, 15)
+)
 
 
-# ---------------- ADD TASK FUNCTION ----------------
+delete_label = tkinter.Label(
+    delete_frame,
+    text="Delete task number:",
+    bg="white",
+    fg="#444444",
+    font=("Arial", 11)
+)
 
-def add_task():
-    task_text = enter_task_field.get()
+delete_label.pack(
+    side="left"
+)
 
-    if task_text == "":
-        return
+
+task_number_field = tkinter.Entry(
+    delete_frame,
+    width=5,
+    font=("Arial", 12),
+    justify="center"
+)
+
+task_number_field.pack(
+    side="left",
+    padx=8
+)
+
+
+delete_button = tkinter.Button(
+    delete_frame,
+    text="Delete",
+    bg="#e85b5b",
+    fg="white",
+    activebackground="#c94a4a",
+    activeforeground="white",
+    font=("Arial", 11, "bold"),
+    bd=0,
+    padx=15,
+    pady=6
+)
+
+delete_button.pack(
+    side="left"
+)
+
+
+# ---------------- TASK DISPLAY FUNCTIONS ----------------
+
+def create_task_row(task_number, task_text):
 
     one_task_frame = tkinter.Frame(
         tasks_frame,
@@ -313,9 +502,6 @@ def add_task():
         fill="x",
         pady=4
     )
-
-
-    task_number = len(tasks) + 1
 
 
     number_label = tkinter.Label(
@@ -366,192 +552,66 @@ def add_task():
     )
 
 
-    new_task = {
+    return {
         "frame": one_task_frame,
         "number": number_label,
         "label": task_label,
-        "button": done_button,
-        "completed": False
+        "button": done_button
     }
 
 
-    def finish_task():
-        if new_task["completed"] is False:
-            new_task["completed"] = True
+def show_task_completed(task):
 
-            done_button.config(
-                text="✓",
-                fg="#4f6bed"
-            )
+    task["button"].config(
+        text="✓",
+        fg="#4f6bed"
+    )
 
-            task_label.config(
-                fg="#888888",
-                font=("Arial", 13, "overstrike")
-            )
-
-        else:
-            new_task["completed"] = False
-
-            done_button.config(
-                text="☐",
-                fg="black"
-            )
-
-            task_label.config(
-                fg="#222222",
-                font=("Arial", 13)
-            )
-
-        reorder_tasks()
-
-
-    done_button.config(
-        command=finish_task
+    task["label"].config(
+        fg="#888888",
+        font=("Arial", 13, "overstrike")
     )
 
 
-    tasks.append(new_task)
+def show_task_uncompleted(task):
 
-
-    enter_task_field.delete(
-        0,
-        tkinter.END
+    task["button"].config(
+        text="☐",
+        fg="black"
     )
 
+    task["label"].config(
+        fg="#222222",
+        font=("Arial", 13)
+    )
+
+
+def display_task_order(tasks_list):
+
+    for task in tasks_list:
+
+        task["frame"].pack_forget()
+
+
+    for index in range(len(tasks_list)):
+
+        tasks_list[index]["frame"].pack(
+            fill="x",
+            pady=4
+        )
+
+        tasks_list[index]["number"].config(
+            text=str(index + 1) + "."
+        )
+
+
+    refresh_task_scroll()
+
+
+def refresh_task_scroll():
 
     gui.update_idletasks()
 
     task_canvas.configure(
         scrollregion=task_canvas.bbox("all")
     )
-
-
-# ---------------- ADD BUTTON ----------------
-
-submit_button = tkinter.Button(
-    add_frame,
-    text="Add Task",
-    bg="#4f6bed",
-    fg="white",
-    activebackground="#4058c9",
-    activeforeground="white",
-    font=("Arial", 12, "bold"),
-    bd=0,
-    padx=18,
-    pady=8,
-    command=add_task
-)
-
-submit_button.pack(
-    side="left",
-    padx=(10, 0)
-)
-
-
-# ---------------- DELETE AREA ----------------
-
-delete_frame = tkinter.Frame(
-    task_frame,
-    bg="white"
-)
-
-delete_frame.pack(
-    fill="x",
-    padx=30,
-    pady=(0, 15)
-)
-
-
-delete_label = tkinter.Label(
-    delete_frame,
-    text="Delete task number:",
-    bg="white",
-    fg="#444444",
-    font=("Arial", 11)
-)
-
-delete_label.pack(
-    side="left"
-)
-
-
-task_number_field = tkinter.Entry(
-    delete_frame,
-    width=5,
-    font=("Arial", 12),
-    justify="center"
-)
-
-task_number_field.pack(
-    side="left",
-    padx=8
-)
-
-
-# ---------------- DELETE FUNCTION ----------------
-
-def delete_task():
-    number = task_number_field.get()
-
-    if number == "":
-        return
-
-    if not number.isdigit():
-        return
-
-    number = int(number)
-
-    if number < 1 or number > len(tasks):
-        return
-
-
-    task_to_delete = tasks[number - 1]
-
-    task_to_delete["frame"].destroy()
-
-    tasks.pop(number - 1)
-
-    reorder_tasks()
-
-
-    task_number_field.delete(
-        0,
-        tkinter.END
-    )
-
-
-    gui.update_idletasks()
-
-    task_canvas.configure(
-        scrollregion=task_canvas.bbox("all")
-    )
-
-
-# ---------------- DELETE BUTTON ----------------
-
-delete_button = tkinter.Button(
-    delete_frame,
-    text="Delete",
-    bg="#e85b5b",
-    fg="white",
-    activebackground="#c94a4a",
-    activeforeground="white",
-    font=("Arial", 11, "bold"),
-    bd=0,
-    padx=15,
-    pady=6,
-    command=delete_task
-)
-
-delete_button.pack(
-    side="left"
-)
-
-
-
-
-enter_task_field.bind(
-    "<Return>",
-    lambda event: add_task()
-)
-
