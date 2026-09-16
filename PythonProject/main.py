@@ -1,7 +1,12 @@
+
+from wellness import get_satisfaction_rating
+
+user_rating = get_satisfaction_rating()
+print(f"User rating received: {user_rating}")
+
 import screen
 import tasks
 import client
-
 
 client.setup_chat_client(
     screen.left_frame,
@@ -28,6 +33,5 @@ screen.enter_task_field.bind(
 tasks.initialize_tasks(
     screen
 )
-
 
 screen.gui.mainloop()
