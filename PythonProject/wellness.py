@@ -17,7 +17,7 @@ def get_satisfaction_rating():
 
     selected_score = tk.IntVar(value=0)
 
-    tk.Label(root, text="How satisfied are you?", font=("Arial", 14, "bold")).pack(pady=10)
+    tk.Label(root, text="How well are you?", font=("Arial", 14, "bold")).pack(pady=10)
 
     frame = tk.Frame(root)
     frame.pack(pady=5)

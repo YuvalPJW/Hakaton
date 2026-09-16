@@ -1,5 +1,5 @@
 from tkinter import messagebox
-
+import timer
 
 tasks_list = []
 
@@ -88,35 +88,27 @@ def reorder_tasks(screen):
         tasks_list
     )
 
+# ---------------- TASK CLICK ACTION ----------------
+
+def on_task_click(screen, task):
+    if task["completed"]:
+        finish_task(screen, task)
+    else:
+        timer.open_timer_popup(screen, task)
 
 # ---------------- COMPLETE TASK ----------------
 
 def finish_task(screen, task):
 
-    if task["completed"] is False:
-
+    if not task["completed"]:
         task["completed"] = True
-
-        screen.show_task_completed(
-            task
-        )
-
+        screen.show_task_completed(task)
     else:
-
         task["completed"] = False
+        screen.show_task_uncompleted(task)
 
-        screen.show_task_uncompleted(
-            task
-        )
-
-
-    reorder_tasks(
-        screen
-    )
-
-    update_cat_status(
-        screen
-    )
+    reorder_tasks(screen)
+    update_cat_status(screen)
 
 
 # ---------------- CREATE TASK ----------------
@@ -139,16 +131,14 @@ def create_task(screen, task_text):
 
 
     new_task["button"].config(
-        command=lambda: finish_task(
+        command=lambda: on_task_click(
             screen,
             new_task
         )
     )
 
 
-    tasks_list.append(
-        new_task
-    )
+    tasks_list.append(new_task)
 
 
 # ---------------- INITIALIZE DEFAULT TASKS ----------------
