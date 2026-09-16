@@ -25,4 +25,9 @@ screen.enter_task_field.bind(
 )
 
 
+tasks.initialize_tasks(
+    screen
+)
+
+
 screen.gui.mainloop()

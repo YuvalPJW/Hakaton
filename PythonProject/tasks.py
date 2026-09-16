@@ -4,6 +4,16 @@ from tkinter import messagebox
 tasks_list = []
 
 
+# ---------------- DEFAULT TASKS ----------------
+
+default_tasks = [
+    "Drink water",
+    "Study",
+    "Clean room",
+    "Exercise"
+]
+
+
 # ---------------- CLEAR FIELDS ----------------
 
 def clear_task_field(screen):
@@ -105,6 +115,57 @@ def finish_task(screen, task):
     )
 
 
+# ---------------- CREATE TASK ----------------
+
+def create_task(screen, task_text):
+
+    task_widgets = screen.create_task_row(
+        len(tasks_list) + 1,
+        task_text
+    )
+
+
+    new_task = {
+        "frame": task_widgets["frame"],
+        "number": task_widgets["number"],
+        "label": task_widgets["label"],
+        "button": task_widgets["button"],
+        "completed": False
+    }
+
+
+    new_task["button"].config(
+        command=lambda: finish_task(
+            screen,
+            new_task
+        )
+    )
+
+
+    tasks_list.append(
+        new_task
+    )
+
+
+# ---------------- INITIALIZE DEFAULT TASKS ----------------
+
+def initialize_tasks(screen):
+
+    for task_text in default_tasks:
+
+        create_task(
+            screen,
+            task_text
+        )
+
+
+    screen.refresh_task_scroll()
+
+    update_cat_status(
+        screen
+    )
+
+
 # ---------------- ADD TASK ----------------
 
 def add_task(screen):
@@ -122,45 +183,17 @@ def add_task(screen):
         return
 
 
-    # create the task on screen
-    task_widgets = screen.create_task_row(
-        len(tasks_list) + 1,
+    create_task(
+        screen,
         task_text
     )
 
 
-    # create task dictionary
-    new_task = {
-        "frame": task_widgets["frame"],
-        "number": task_widgets["number"],
-        "label": task_widgets["label"],
-        "button": task_widgets["button"],
-        "completed": False
-    }
-
-
-    # button for completing task
-    new_task["button"].config(
-        command=lambda: finish_task(
-            screen,
-            new_task
-        )
-    )
-
-
-    # save task
-    tasks_list.append(
-        new_task
-    )
-
-
-    # clear input field
     clear_task_field(
         screen
     )
 
 
-    # update scrolling
     screen.refresh_task_scroll()
 
 
@@ -214,35 +247,29 @@ def delete_task(screen):
         return
 
 
-    # find the task
     task_to_delete = tasks_list[
         task_number - 1
     ]
 
 
-    # delete it from screen
     task_to_delete["frame"].destroy()
 
 
-    # delete it from list
     tasks_list.pop(
         task_number - 1
     )
 
 
-    # clear number field
     clear_task_number_field(
         screen
     )
 
 
-    # update numbers and order
     reorder_tasks(
         screen
     )
 
 
-    # update cat
     update_cat_status(
         screen
     )
