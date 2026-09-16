@@ -1,5 +1,8 @@
 import socket
 import threading
+from better_profanity import profanity
+
+profanity.load_censor_words()
 
 PORT = 5000
 
@@ -10,21 +13,15 @@ FORMAT = "utf-8"
 clients, names = [], []
 
 server = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-
 server.bind(ADDRESS)
 
 
 def start_chat():
-
     print("server is working on " + SERVER)
-
     server.listen()
-
     while True:
-
         conn, addr = server.accept()
         print(f"New connection request from {addr}")
-
         thread = threading.Thread(target=handle_client, args=(conn, addr))
         thread.start()
 
@@ -45,13 +42,14 @@ def handle_client(conn, addr):
         broadcast_message(f"{name} joined the chat!".encode(FORMAT))
         conn.send("Connection successful!\n".encode(FORMAT))
 
-        connected = True
-        while connected:
-            message = conn.recv(1024)
-            if message:
-                broadcast_message(message)
-            else:
-                connected = False
+        while True:
+            message_bytes = conn.recv(1024)
+            if not message_bytes:
+                break
+            raw_text = message_bytes.decode(FORMAT)
+            clean_text = profanity.censor(raw_text)
+            broadcast_message(clean_text.encode(FORMAT))
+
     except Exception as e:
         print(f"Error with client {addr}: {e}")
     finally:

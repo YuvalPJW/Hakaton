@@ -6,12 +6,16 @@ tasks_list = []
 
 # ---------------- DEFAULT TASKS ----------------
 
-default_tasks = [
-    "Drink water",
-    "Study",
-    "Clean room",
-    "Exercise"
-]
+default_tasks = {
+    "Drink water":1,
+    "Study":5,
+    "Clean room":4,
+    "Exercise":3,
+    "Shower": 2,
+    "Go outside":2,
+    "Eat healthy":1,
+    "Socialize":5
+}
 
 
 # ---------------- CLEAR FIELDS ----------------
