@@ -8,12 +8,12 @@ tasks_list = []
 
 default_tasks = {
     "Drink water":1,
-    "Study":5,
-    "Clean room":4,
-    "Exercise":3,
+    "Eat healthy": 1,
     "Shower": 2,
-    "Go outside":2,
-    "Eat healthy":1,
+    "Go outside": 2,
+    "Exercise":3,
+    "Clean room": 4,
+    "Study": 5,
     "Socialize":5
 }
 
@@ -83,7 +83,6 @@ def reorder_tasks(screen):
         finished_tasks
     )
 
-
     screen.display_task_order(
         tasks_list
     )
@@ -139,6 +138,7 @@ def create_task(screen, task_text):
 
 
     tasks_list.append(new_task)
+    reorder_tasks(screen)
 
 
 # ---------------- INITIALIZE DEFAULT TASKS ----------------

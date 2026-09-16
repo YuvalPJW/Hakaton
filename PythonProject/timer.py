@@ -8,7 +8,7 @@ from playsound3 import playsound
 
 def open_timer_popup(screen, task):
     top = Toplevel(screen.gui)
-    top.geometry("300x250")
+    top.geometry("300x150")
 
     task_name = task["label"].cget("text") if hasattr(task["label"], "cget") else "Task"
     top.title(f"Timer: {task_name}")
@@ -36,9 +36,9 @@ def open_timer_popup(screen, task):
 
             if temp == 0:
 
-                playsound('cat_alarm.wav')
 
                 top.destroy()
+                playsound('cat_alarm.wav')
 
                 was_completed = messagebox.askyesno(
                     "Timer Finished",
@@ -61,4 +61,4 @@ def open_timer_popup(screen, task):
             messagebox.showerror("Input Error", "Please enter valid numeric values")
 
     btn = Button(top, text="Start Countdown", bd="5", command=start_timer)
-    btn.place(x=70, y=120)
+    btn.place(x=95, y=80)

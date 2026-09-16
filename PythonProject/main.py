@@ -13,7 +13,6 @@ client.setup_chat_client(
     username="User"
 )
 
-
 screen.submit_button.config(
     command=lambda: tasks.add_task(screen)
 )
