@@ -1,107 +1,127 @@
-# import socket library
 import socket
-
-# import threading library
 import threading
 
-# Choose a port that is free
 PORT = 5000
 
-# An IPv4 address is obtained
-# for the server.
-SERVER = socket.gethostbyname(socket.gethostname())
-
-# Address is stored as a tuple
+SERVER = '0.0.0.0'
 ADDRESS = (SERVER, PORT)
-
-# the format in which encoding
-# and decoding will occur
 FORMAT = "utf-8"
 
-# Lists that will contain
-# all the clients connected to
-# the server and their names.
 clients, names = [], []
 
-# Create a new socket for
-# the server
-server = socket.socket(socket.AF_INET,
-                       socket.SOCK_STREAM)
+server = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 
-# bind the address of the
-# server to the socket
 server.bind(ADDRESS)
-
-# function to start the connection
 
 
 def start_chat():
 
     print("server is working on " + SERVER)
 
-    # listening for connections
     server.listen()
 
     while True:
 
-        # accept connections and returns
-        # a new connection to the client
-        #  and  the address bound to it
         conn, addr = server.accept()
-        conn.send("NAME".encode(FORMAT))
+        print(f"New connection request from {addr}")
 
-        # 1024 represents the max amount
-        # of data that can be received (bytes)
-        name = conn.recv(1024).decode(FORMAT)
-
-        # append the name and client
-        # to the respective list
-        names.append(name)
-        clients.append(conn)
-
-        print(f"Name is :{name}")
-
-        # broadcast message
-        broadcast_message(f"{name} has joined the chat!".encode(FORMAT))
-
-        conn.send('Connection successful!'.encode(FORMAT))
-
-        # Start the handling thread
-        thread = threading.Thread(target=handle,
-                                  args=(conn, addr))
+        # Start a handler thread to perform handshake & receive messages
+        thread = threading.Thread(target=handle_client, args=(conn, addr))
         thread.start()
-
-        # no. of clients connected
-        # to the server
-        print(f"active connections {threading.activeCount()-1}")
+        #
+        # conn.send("NAME".encode(FORMAT))
+        #
+        # name = conn.recv(1024).decode(FORMAT)
+        #
+        # names.append(name)
+        # clients.append(conn)
+        #
+        # print(f"Name is :{name}")
+        #
+        # # broadcast message
+        # broadcast_message(f"{name} has joined the chat!".encode(FORMAT))
+        #
+        # conn.send('Connection successful!'.encode(FORMAT))
+        #
+        # # Start the handling thread
+        # thread = threading.Thread(target=handle,
+        #                           args=(conn, addr))
+        # thread.start()
+        #
+        # # no. of clients connected
+        # # to the server
+        # print(f"active connections {threading.activeCount()-1}")
 
 # method to handle the
 # incoming messages
 
+def handle_client(conn, addr):
+    try:
+        conn.send("NAME".encode(FORMAT))
+        name = conn.recv(1024).decode(FORMAT)
 
-def handle(conn, addr):
+        if not name:
+            conn.close()
+            return
 
-    print(f"new connection {addr}")
-    connected = True
+        names.append(name)
+        clients.append(conn)
 
-    while connected:
-          # receive message
-        message = conn.recv(1024)
+        print(f"Name registered: {name} ({addr})")
+        broadcast_message(f"{name} joined the chat!".encode(FORMAT))
+        conn.send("Connection successful!\n".encode(FORMAT))
 
-        # broadcast message
-        broadcast_message(message)
-
-    # close the connection
-    conn.close()
-
-# method for broadcasting
-# messages to each client
+        connected = True
+        while connected:
+            message = conn.recv(1024)
+            if message:
+                broadcast_message(message)
+            else:
+                connected = False
+    except Exception as e:
+        print(f"Error with client {addr}: {e}")
+    finally:
+        if conn in clients:
+            idx = clients.index(conn)
+            clients.remove(conn)
+            names.pop(idx)
+            conn.close()
 
 
 def broadcast_message(message):
     for client in clients:
-        client.send(message)
+        try:
+            client.send(message)
+        except:
+            pass
 
+
+# if __name__ == "__main__":
+#     start_chat()
+#
+# def handle(conn, addr):
+#
+#     print(f"new connection {addr}")
+#     connected = True
+#
+#     while connected:
+#           # receive message
+#         message = conn.recv(1024)
+#
+#         # broadcast message
+#         broadcast_message(message)
+#
+#     # close the connection
+#     conn.close()
+#
+# # method for broadcasting
+# # messages to each client
+#
+#
+# def broadcast_message(message):
+#     for client in clients:
+#         client.send(message)
+#
 
 # call the method to
 # begin the communication
