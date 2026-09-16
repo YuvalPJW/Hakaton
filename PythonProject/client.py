@@ -25,7 +25,7 @@ def setup_chat_client(parent_frame, username=DEFAULT_USERNAME):
     chat_container = Frame(parent_frame, bg="#17202A")
     chat_container.pack(fill=BOTH, expand=True)
 
-    labelHead = Label(
+    label_head = Label(
         chat_container,
         bg="#17202A",
         fg="#EAECEE",
@@ -33,7 +33,7 @@ def setup_chat_client(parent_frame, username=DEFAULT_USERNAME):
         font=("Helvetica", 13, "bold"),
         pady=8,
     )
-    labelHead.pack(fill=X)
+    label_head.pack(fill=X)
 
     text_frame = Frame(chat_container, bg="#17202A")
     text_frame.pack(fill=BOTH, expand=True, padx=5, pady=5)
@@ -49,6 +49,7 @@ def setup_chat_client(parent_frame, username=DEFAULT_USERNAME):
         yscrollcommand=scrollbar.set,
         wrap=WORD,
     )
+
     text_cons.pack(side=LEFT, fill=BOTH, expand=True)
     scrollbar.config(command=text_cons.yview)
     text_cons.config(state=DISABLED)
@@ -65,7 +66,6 @@ def setup_chat_client(parent_frame, username=DEFAULT_USERNAME):
         while True:
             try:
                 message = client.recv(1024).decode(FORMAT)
-                # Respond to server's name request
                 if message == "NAME":
                     client.send(username.encode(FORMAT))
                 else:

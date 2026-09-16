@@ -25,35 +25,9 @@ def start_chat():
         conn, addr = server.accept()
         print(f"New connection request from {addr}")
 
-        # Start a handler thread to perform handshake & receive messages
         thread = threading.Thread(target=handle_client, args=(conn, addr))
         thread.start()
-        #
-        # conn.send("NAME".encode(FORMAT))
-        #
-        # name = conn.recv(1024).decode(FORMAT)
-        #
-        # names.append(name)
-        # clients.append(conn)
-        #
-        # print(f"Name is :{name}")
-        #
-        # # broadcast message
-        # broadcast_message(f"{name} has joined the chat!".encode(FORMAT))
-        #
-        # conn.send('Connection successful!'.encode(FORMAT))
-        #
-        # # Start the handling thread
-        # thread = threading.Thread(target=handle,
-        #                           args=(conn, addr))
-        # thread.start()
-        #
-        # # no. of clients connected
-        # # to the server
-        # print(f"active connections {threading.activeCount()-1}")
 
-# method to handle the
-# incoming messages
 
 def handle_client(conn, addr):
     try:
@@ -95,34 +69,4 @@ def broadcast_message(message):
         except:
             pass
 
-
-# if __name__ == "__main__":
-#     start_chat()
-#
-# def handle(conn, addr):
-#
-#     print(f"new connection {addr}")
-#     connected = True
-#
-#     while connected:
-#           # receive message
-#         message = conn.recv(1024)
-#
-#         # broadcast message
-#         broadcast_message(message)
-#
-#     # close the connection
-#     conn.close()
-#
-# # method for broadcasting
-# # messages to each client
-#
-#
-# def broadcast_message(message):
-#     for client in clients:
-#         client.send(message)
-#
-
-# call the method to
-# begin the communication
 start_chat()
